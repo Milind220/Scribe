@@ -47,7 +47,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-between p-12 text-[#6a6a6a]">
-      <div className="flex flex-col mt-2 pt-2 max-w-[600px] flex-shrink items-start">
+      <div className="flex flex-col mt-2 pt-2 max-w-[600px] shrink items-start">
         <div className={`${pageState % 2 == 0 ? "fade-in" : "fade-out"}`}>
           {text.split("\n").map((line, i) => <p className="mb-8" key={i}>{line}</p>)}
           <button onClick={updateState} className={"underline mt-1 text-medium"}>

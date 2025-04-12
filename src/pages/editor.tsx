@@ -110,7 +110,7 @@ export default function Home() {
 
   return (
     <div className="w-full items-center justify-between p-12 h-screen">
-      <div className="flex flex-col mt-2 pt-2 max-w-[600px] flex-shrink h-full items-start mx-auto">
+      <div className="flex flex-col mt-2 pt-2 max-w-[600px] shrink h-full items-start mx-auto">
         <div className="flex flex-row items-center justify-between w-full">
           <p className='text-black opacity-60 mb-2.5 font-semibold'>Ephemeral Notes</p>
           <p className='text-black opacity-60 mb-2.5 font-light text-sm'>60s</p>
