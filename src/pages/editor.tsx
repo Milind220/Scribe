@@ -110,12 +110,15 @@ export default function Home() {
 
   return (
     <div className="w-full items-center justify-between p-12 h-screen">
-      <div className="flex flex-col mt-2 pt-2 max-w-[600px] shrink h-full items-start mx-auto">
+      <div className="flex flex-col mt-2 pt-2 max-w-[700px] shrink h-full items-start mx-auto px-8 bg-card rounded-lg">
         <div className="flex flex-row items-center justify-between w-full">
-          <p className='text-foreground/60 mb-2.5 font-semibold'>Scribe</p>
-          <p className='text-muted-foreground/60 mb-2.5 font-light text-sm'>60s</p>
+          <p className='text-foreground/70 mb-2.5 font-semibold'>Scribe</p>
+          <p className='text-foreground/70 mb-2.5 font-light text-sm'>60s</p>
         </div>
-        <Editor editorState={editorState} onChange={handleEditorChange} placeholder="Your thoughts don't stick around forever, post before they fade away..."
+        <Editor 
+          editorState={editorState} 
+          onChange={handleEditorChange} 
+          placeholder="Your thoughts don't stick around forever, post before they fade away..."
         />
       </div>
     </div>
