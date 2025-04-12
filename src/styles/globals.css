@@ -25,11 +25,6 @@
   }
 }
 
-body {
-  color: #fff;
-  font-size: 14px;
-}
-
 @keyframes fadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
@@ -43,9 +38,11 @@ body {
 
 div.DraftEditor-root {
   border: 0px;
-  background-color: white;
-  color: #6A6A6A;
-  font-size: 14px;
+  /* Use theme variable for background - adjust if 'card' isn't right */
+  background-color: var(--card);
+  /* Use theme variable for text color - choose appropriate one */
+  color: var(--muted-foreground); /* Example: often good for placeholders/secondary text */
+  font-size: 14px; /* Keep if specific size needed, else consider Tailwind text utilities */
   height: 100%;
   width: 100%;
   overflow-y: auto;
@@ -53,11 +50,12 @@ div.DraftEditor-root {
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
     width: 0px;
-    background: transparent; /* make scrollbar transparent */
+    background: transparent;
   }
-  border-top: #C9C9C9 2px solid;
+  /* Use theme variable for border color */
+  border-top: 2px solid var(--border);
   padding-top: 10px;
-  transition: height 1s ease-in-out;  /* Adjust duration and easing as needed */
+  transition: height 1s ease-in-out;
 }
 div.DraftEditor-editorContainer,
 div.public-DraftEditor-content {
@@ -179,9 +177,6 @@ div.public-DraftEditor-content {
   --sidebar-accent-foreground: oklch(0.33 0 0);
   --sidebar-border: oklch(0.94 0 0);
   --sidebar-ring: oklch(0.77 0 0);
-  --font-sans: JetBrains Mono, monospace;
-  --font-serif: JetBrains Mono, monospace;
-  --font-mono: JetBrains Mono, monospace;
   --radius: 1rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
@@ -226,9 +221,6 @@ div.public-DraftEditor-content {
   --sidebar-accent-foreground: oklch(0.97 0.00 286.38);
   --sidebar-border: oklch(0.27 0.01 286.03);
   --sidebar-ring: oklch(0.87 0.01 286.29);
-  --font-sans: JetBrains Mono, monospace;
-  --font-serif: JetBrains Mono, monospace;
-  --font-mono: JetBrains Mono, monospace;
   --radius: 1rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
