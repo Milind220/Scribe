@@ -28,13 +28,13 @@ export default function Home() {
           <div className={`${pageState % 2 == 0 ? "fade-in" : "fade-out"}`}>
             <p className="mb-6">
               I built Scribe because going on X can be distracting when all I want is to write my thoughts.
-              Sometimes you don't want to engage with everything - you just want to write.
+              Sometimes you don&apos;t want to engage with everything - you just want to write.
             </p>
             <p className="mb-6">
-              Inspired by Will DePue's Ephemeral Notes, Scribe is a distraction-free space where text fades away, forcing you to think clearly and post with intention.
+              Inspired by Will DePue&apos;s Ephemeral Notes, Scribe is a distraction-free space where text fades away, forcing you to think clearly and post with intention.
               <br />
               <br />
-              Will said it best - Writing is thinking. It's the greatest tool we have.
+              Will said it best - Writing is thinking. It&apos;s the greatest tool we have.
             </p>
             <button onClick={updateState} className={"underline mt-1 text-medium font-medium text-primary"}>
               Start -&gt;

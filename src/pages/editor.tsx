@@ -19,7 +19,12 @@ const FadeContext = React.createContext(true);
 
 function FadingSpan(props: any) {
   const fadeEnabled = React.useContext(FadeContext);
-  const [style, setStyle] = useState<any>({
+  const [style, setStyle] = useState<{
+    display: string;
+    transition: string;
+    textSize: string | number;
+    opacity?: number;
+  }>({
     display: 'inline-block',
     transition: `opacity ${timeout / 1000}s, textSize ${timeout / 1000}s`,
     textSize: 'auto',  // Start at normal height
@@ -27,17 +32,17 @@ function FadingSpan(props: any) {
 
   useEffect(() => {
     if (fadeEnabled) {
-      setStyle({
-        ...style,
+      setStyle((prevStyle: typeof style) => ({
+        ...prevStyle,
         opacity: 0,
         textSize: 0,
-      });
+      }));
     } else {
-      setStyle({
-        ...style,
+      setStyle((prevStyle: typeof style) => ({
+        ...prevStyle,
         opacity: 1,
         textSize: 'auto',
-      });
+      }));
     }
   }, [fadeEnabled]);
 
@@ -202,7 +207,7 @@ export default function EditorPage() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>True thoughts don't need editing. First draft, best draft</p>
+                    <p>True thoughts don&apos;t need editing. First draft, best draft</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
