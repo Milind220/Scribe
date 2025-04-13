@@ -4,10 +4,13 @@ import Immutable from 'immutable';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SendIcon } from 'lucide-react';
+import React from 'react';
 
 const timeout = 120000
+const FadeContext = React.createContext(true);
 
 function FadingSpan(props: any) {
+  const fadeEnabled = React.useContext(FadeContext);
   const [style, setStyle] = useState<any>({
     display: 'inline-block',
     transition: `opacity ${timeout / 1000}s, textSize ${timeout / 1000}s`,
@@ -15,12 +18,20 @@ function FadingSpan(props: any) {
   });
 
   useEffect(() => {
-    setStyle({
-      ...style,
-      opacity: 0,
-      textSize: 0,
-    });
-  }, []);
+    if (fadeEnabled) {
+      setStyle({
+        ...style,
+        opacity: 0,
+        textSize: 0,
+      });
+    } else {
+      setStyle({
+        ...style,
+        opacity: 1,
+        textSize: 'auto',
+      });
+    }
+  }, [fadeEnabled]);
 
   return <span style={style}>{props.children}</span>;
 }
@@ -46,6 +57,14 @@ const decorator = new CompositeDecorator([
 export default function EditorPage() {
   const [blocks, setBlocks] = useState(new Map());
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty(decorator));
+  const [charCount, setCharCount] = useState(0);
+  const [showPop, setShowPop] = useState(false);
+  const [popShown, setPopShown] = useState(false);
+  const [fadeEnabled, setFadeEnabled] = useState(true);
+
+  const MAX_CHARS = 280;
+  const PREMIUM_MAX_CHARS = 25000;
+  const isPremium = true;  // For now, we're pretending to be premium
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -107,38 +126,72 @@ export default function EditorPage() {
 
     setBlocks(newBlocks);
     setEditorState(newEditorState);
+
+    const newCharCount = newEditorState.getCurrentContent().getPlainText().length;
+    setCharCount(newCharCount);
+
+    if (isPremium && charCount === MAX_CHARS) {
+      setShowPop(true);
+      setTimeout(() => setShowPop(false), 1000);
+    }
+
+    if (showPop) {
+      setPopShown(true);
+    }
   };
+
+  const getOpacity = () => {
+    return charCount / MAX_CHARS;
+    // TODO: Add more logic.
+  }
 
 
   return (
-    // Outermost container for screen size and padding
-    <div className="w-full px-4 py-8 flex justify-center">
-      {/* Content container for editor*/}
-      <div className="w-full max-w-[700px] relative">
-        <div className="bg-card rounded-lg p-6">
-          {/* Header */}
-          <div className="flex flex-row items-center justify-between w-full">
-            <p className='text-foreground/70 mb-2.5 font-semibold'>Scribe</p>
-            <p className='text-foreground/70 mb-2.5 font-light text-sm'>60s</p>
+    <FadeContext.Provider value={fadeEnabled}>
+      {/*Outermost container for screen size and padding*/} 
+      <div className="w-full px-4 py-8 flex justify-center">
+        {/* Content container for editor*/}
+        <div className="w-full max-w-[700px] relative">
+          <div className="bg-card rounded-lg p-6">
+            {/* Header */}
+            <div className="flex flex-row items-center justify-between w-full">
+              <p className='text-foreground/70 mb-2.5 font-semibold'>Scribe</p>
+              <p 
+                className={`text-foreground/70 transition-all duration-300 ${
+                  showPop ? 'scale-150 font-bold' : ''
+                }`}
+                style={{ opacity: getOpacity() }}
+              >
+                {charCount}/{popShown ? PREMIUM_MAX_CHARS : MAX_CHARS}
+              </p>
+              <button
+                className="text-foreground/40 mb-2.5 font-light text-sm hover:text-foreground/60 transition-colors duration-200 rounded px-2 py-0.5 hover:bg-foreground/10"
+                onClick={() => {
+                  setFadeEnabled(prev => !prev);
+                }}
+              >
+                {fadeEnabled ? '60s' : 'Words stay, time flies'}
+              </button>
+            </div>
+            {/* Editor */}
+            <div className="h-[calc(100vh-200px)] overflow-y-auto ">
+              <Editor 
+                editorState={editorState} 
+                onChange={handleEditorChange} 
+                placeholder="Your thoughts don't stick around forever, post before they fade..."
+              />
+            </div>
           </div>
-          {/* Editor */}
-          <div className="h-[calc(100vh-200px)] overflow-y-auto ">
-            <Editor 
-              editorState={editorState} 
-              onChange={handleEditorChange} 
-              placeholder="Your thoughts don't stick around forever, post before they fade away..."
-            />
+          {/* Post button */}
+          <div className="mt-4 md:absolute md:bottom-4 md:right-4">
+            <Button className="flex items-center gap-x-2">
+              <SendIcon className="w-4 h-4" />
+              Post
+            </Button>
           </div>
-        </div>
-        {/* Post button */}
-        <div className="mt-4 md:absolute md:bottom-4 md:right-4">
-          <Button className="flex items-center gap-x-2">
-            <SendIcon className="w-4 h-4" />
-            Post
-          </Button>
         </div>
       </div>
-    </div>
+    </FadeContext.Provider>
   );
 }
 
