@@ -1,38 +1,31 @@
 import '@/styles/globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
-import Head from 'next/head';
-
 import { JetBrains_Mono } from 'next/font/google';
+import Layout from '@/components/Layout';
+import { ThemeProvider } from 'next-themes';
+import { SessionProvider } from 'next-auth/react';
 
-const jetbrains = JetBrains_Mono({ subsets: ['latin'] })
+const jetbrains = JetBrains_Mono({ 
+  subsets: ['latin'],
+  variable: '--font-jetbrains',
+})
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <>
-      <Head>
-        <title>Ephemeral Notes</title>
-        <meta name="description" content="Impermanent thoughts, impermanent notes." />
-        <meta property="og:title" content="Ephemeral Notes" />
-        <meta property="og:description" content="Impermanent thoughts, impermanent notes." />
-        <meta property="og:url" content="https://ephemeral-notes.com" />
-        <meta property="og:site_name" content="Ephemeral Notes" />
-        <meta property="og:image" content="https://ephemeral-notes.com/static/OpenGraphEphemeral.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:locale" content="en-US" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Ephemeral Notes" />
-        <meta name="twitter:description" content="Impermanent thoughts, impermanent notes." />
-        <meta name="twitter:site" content="@willdepue" />
-        <meta name="twitter:site:id" content="998575387067142144" />
-        <meta name="twitter:image" content="https://ephemeral-notes.com/static/OpenGraphEphemeral.png" />
-      </Head>
-      <main className={jetbrains.className}>
-        <Component {...pageProps} />
-      </main>
-      <Analytics />
-    </>)
-
+    <SessionProvider session={pageProps.session}>
+      <ThemeProvider 
+        attribute="class" 
+        defaultTheme="system"
+        disableTransitionOnChange
+      >
+        <div className={`${jetbrains.className} font-sans`}>
+        <Layout>
+          <Component {...pageProps} />
+          </Layout>
+          <Analytics />
+        </div>
+      </ThemeProvider>
+    </SessionProvider>
+  );
 }
