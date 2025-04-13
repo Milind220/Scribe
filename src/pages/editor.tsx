@@ -3,6 +3,12 @@ import 'draft-js/dist/Draft.css';
 import Immutable from 'immutable';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { SendIcon } from 'lucide-react';
 import React from 'react';
 
@@ -164,14 +170,25 @@ export default function EditorPage() {
               >
                 {charCount}/{popShown ? PREMIUM_MAX_CHARS : MAX_CHARS}
               </p>
-              <button
-                className="text-foreground/40 mb-2.5 font-light text-sm hover:text-foreground/60 transition-colors duration-200 rounded px-2 py-0.5 hover:bg-foreground/10"
-                onClick={() => {
-                  setFadeEnabled(prev => !prev);
-                }}
-              >
-                {fadeEnabled ? '60s' : 'Words stay, time flies'}
-              </button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-foreground/40 font-light hover:text-foreground/60 rounded"
+                      onClick={() => {
+                        setFadeEnabled(prev => !prev);
+                      }}
+                    >
+                      {fadeEnabled ? '60s' : 'Words stay, time flies'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>True thoughts don't need editing. First draft, best draft</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             {/* Editor */}
             <div className="h-[calc(100vh-200px)] overflow-y-auto ">
