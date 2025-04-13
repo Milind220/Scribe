@@ -3,11 +3,18 @@ import TwitterProvider from "next-auth/providers/twitter";
 
 export default NextAuth({
   providers: [
-      TwitterProvider({
-          clientId: process.env.TWITTER_CLIENT_ID as string,
-          clientSecret: process.env.TWITTER_CLIENT_SECRET as string,
-          version: "1.0A",
-      })
+    TwitterProvider(
+      {
+        clientId: process.env.TWITTER_CLIENT_ID as string,
+        clientSecret: process.env.TWITTER_CLIENT_SECRET as string,
+        version: "2.0",
+        authorization: {
+          params: {
+            scope: "tweet.read users.read tweet.write offline.access"
+          }
+        }
+      }
+    )
   ],
   callbacks: {
     async jwt({ token, account }) {
