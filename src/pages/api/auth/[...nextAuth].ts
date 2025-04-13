@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
 
-const handler = NextAuth({
+export default NextAuth({
   providers: [
       TwitterProvider({
           clientId: process.env.TWITTER_CLIENT_ID as string,
@@ -19,10 +19,12 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      session.user.accessToken = token.accessToken as string;
+      if (session.user) {
+        session.user.accessToken = token.accessToken as string;
+      }
       return session;
     }
-  }
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 })
-
-export { handler as GET, handler as POST }
