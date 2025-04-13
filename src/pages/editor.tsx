@@ -2,6 +2,8 @@ import { CharacterMetadata, CompositeDecorator, ContentBlock, ContentState, Edit
 import 'draft-js/dist/Draft.css';
 import Immutable from 'immutable';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { SendIcon } from 'lucide-react';
 
 const timeout = 120000
 
@@ -41,7 +43,7 @@ const decorator = new CompositeDecorator([
 ]);
 
 
-export default function Home() {
+export default function EditorPage() {
   const [blocks, setBlocks] = useState(new Map());
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty(decorator));
 
@@ -109,17 +111,32 @@ export default function Home() {
 
 
   return (
-    <div className="w-full items-center justify-between p-12 h-screen">
-      <div className="flex flex-col mt-2 pt-2 max-w-[700px] shrink h-full items-start mx-auto px-8 bg-card rounded-lg">
-        <div className="flex flex-row items-center justify-between w-full">
-          <p className='text-foreground/70 mb-2.5 font-semibold'>Scribe</p>
-          <p className='text-foreground/70 mb-2.5 font-light text-sm'>60s</p>
+    // Outermost container for screen size and padding
+    <div className="w-full px-4 py-8 flex justify-center">
+      {/* Content container for editor*/}
+      <div className="w-full max-w-[700px] relative">
+        <div className="bg-card rounded-lg p-6">
+          {/* Header */}
+          <div className="flex flex-row items-center justify-between w-full">
+            <p className='text-foreground/70 mb-2.5 font-semibold'>Scribe</p>
+            <p className='text-foreground/70 mb-2.5 font-light text-sm'>60s</p>
+          </div>
+          {/* Editor */}
+          <div className="h-[calc(100vh-200px)] overflow-y-auto ">
+            <Editor 
+              editorState={editorState} 
+              onChange={handleEditorChange} 
+              placeholder="Your thoughts don't stick around forever, post before they fade away..."
+            />
+          </div>
         </div>
-        <Editor 
-          editorState={editorState} 
-          onChange={handleEditorChange} 
-          placeholder="Your thoughts don't stick around forever, post before they fade away..."
-        />
+        {/* Post button */}
+        <div className="mt-4 md:absolute md:bottom-4 md:right-4">
+          <Button className="flex items-center gap-x-2">
+            <SendIcon className="w-4 h-4" />
+            Post
+          </Button>
+        </div>
       </div>
     </div>
   );
