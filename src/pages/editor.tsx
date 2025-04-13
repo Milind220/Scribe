@@ -157,7 +157,7 @@ export default function EditorPage() {
       {/*Outermost container for screen size and padding*/} 
       <div className="w-full px-4 py-8 flex justify-center">
         {/* Content container for editor*/}
-        <div className="w-full max-w-[700px] relative">
+        <div className="w-full max-w-[700px] flex flex-col">
           <div className="bg-card rounded-lg p-6">
             {/* Header */}
             <div className="flex flex-row items-center justify-between w-full">
