@@ -20,7 +20,7 @@ export default function Home() {
           {/* Your logo here */}
           <span className="font-semibold text-lg">Scribe</span>
         </div>
-        <Button variant="ghost" className="text-sm">Sign in</Button>
+        <Button variant="ghost" className="text-sm" onClick={() => router.push("/signup")}>Sign in</Button>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center p-6">
