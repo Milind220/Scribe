@@ -3,6 +3,8 @@ import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import { JetBrains_Mono } from 'next/font/google';
 import Layout from '@/components/Layout';
+import { ThemeProvider } from 'next-themes';
+
 const jetbrains = JetBrains_Mono({ 
   subsets: ['latin'],
   variable: '--font-jetbrains',
@@ -10,11 +12,17 @@ const jetbrains = JetBrains_Mono({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div className={`${jetbrains.className} font-sans`}>
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="system"
+      disableTransitionOnChange
+    >
+      <div className={`${jetbrains.className} font-sans`}>
       <Layout>
         <Component {...pageProps} />
-      </Layout>
-      <Analytics />
-    </div>
+        </Layout>
+        <Analytics />
+      </div>
+    </ThemeProvider>
   );
 }
