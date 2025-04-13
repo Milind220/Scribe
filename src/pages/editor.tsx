@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/tooltip';
 import { SendIcon } from 'lucide-react';
 import React from 'react';
+import { getSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 const timeout = 120000
 const FadeContext = React.createContext(true);
@@ -151,6 +153,21 @@ export default function EditorPage() {
     // TODO: Add more logic.
   }
 
+  const handlePost = async () => {
+    // Check if the user is authenticated
+    const session = await getSession();
+    if (!session) {
+      // Redirect to the login page
+    }
+
+    // if free posts remaining, post
+
+    // if no free posts remaining, check if they are premium
+
+    // if premium, post
+
+    // if not premium, redirect to checkout
+  }
 
   return (
     <FadeContext.Provider value={fadeEnabled}>
@@ -201,7 +218,7 @@ export default function EditorPage() {
           </div>
           {/* Post button */}
           <div className="mt-4 md:absolute md:bottom-4 md:right-4">
-            <Button className="flex items-center gap-x-2">
+            <Button className="flex items-center gap-x-2" onClick={handlePost}>
               <SendIcon className="w-4 h-4" />
               Post
             </Button>
