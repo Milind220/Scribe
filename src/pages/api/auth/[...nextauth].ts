@@ -18,16 +18,22 @@ export default NextAuth({
   ],
   callbacks: {
     async jwt({ token, account }) {
+      console.log("JWT Callback - Account:", account); // See if account details (tokens) are present
+      console.log("JWT Callback - Initial Token:", token);
       if (account?.provider === "twitter") {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.accessTokenExpires = account.expires_at;
       }
+      console.log("JWT Callback - Returning Token:", token);
       return token;
     },
     async session({ session, token }) {
+      console.log("Session Callback - Token:", token); // Check if token from JWT is received
       if (session.user) {
         session.user.accessToken = token.accessToken as string;
+      } else {
+
       }
       return session;
     }
