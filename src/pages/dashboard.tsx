@@ -12,7 +12,7 @@ export default function Dashboard() {
   
   // If no session, redirect to sign in
   if (!session) {
-    typeof window !== "undefined" && router.push("/signin")
+    typeof window !== "undefined" && router.push("/signup")
     return null
   }
 
