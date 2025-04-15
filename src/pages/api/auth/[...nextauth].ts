@@ -1,10 +1,9 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
 
-export default NextAuth({
+export const authOptions: AuthOptions = ({
   providers: [
-    TwitterProvider(
-      {
+    TwitterProvider({
         clientId: process.env.TWITTER_CLIENT_ID as string,
         clientSecret: process.env.TWITTER_CLIENT_SECRET as string,
         version: "2.0",
@@ -18,22 +17,20 @@ export default NextAuth({
   ],
   callbacks: {
     async jwt({ token, account }) {
-
-      console.log("JWT Callback - Account:", account); // See if account details (tokens) are present
+      console.log("JWT Callback - Account:", account);      // See if account details (tokens) are present
       console.log("JWT Callback - Initial Token:", token);
       if (account?.provider === "twitter") {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
-        token.accessTokenExpires = account.expires_at;
+        token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined; // Convert to milliseconds for consistency.
       }
       console.log("JWT Callback - Returning Token:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log(">>> SESSION CALLBACK START - Initial Session:", session); // Log entry
-      console.log(">>> SESSION CALLBACK START - Token:", token);          // Log token received
+      console.log(">>> SESSION CALLBACK START - Initial Session:", session);    // Log entry
+      console.log(">>> SESSION CALLBACK START - Token:", token);                // Log token received
       try {
-        // Your existing logic to modify the session
         if (session.user && token.accessToken) {
           session.user.accessToken = token.accessToken as string;
         } else {
@@ -41,9 +38,8 @@ export default NextAuth({
           if (!session.user) console.warn("SESSION CALLBACK - session.user is missing");
           if (!token.accessToken) console.warn("SESSION CALLBACK - token.accessToken is missing");
         }
-        // Add any other assignments you need here
 
-        console.log(">>> SESSION CALLBACK SUCCESS - Returning Session:", session); // Log success *before* returning
+        console.log(">>> SESSION CALLBACK SUCCESS - Returning Session:", session);  // Log success *before* returning
         return session;
 
       } catch (error) {
@@ -59,3 +55,5 @@ export default NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
 })
+
+export default NextAuth(authOptions);
