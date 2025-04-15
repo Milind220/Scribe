@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/tooltip';
 import { SendIcon } from 'lucide-react';
 import React from 'react';
-import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 
 const timeout = 120000
 const FadeContext = React.createContext(true);
@@ -160,7 +160,7 @@ export default function EditorPage() {
 
   const handlePost = async () => {
     // Check if the user is authenticated
-    const session = await getSession();
+    const session = useSession();
     if (!session) {
       // Redirect to the login page
     }
