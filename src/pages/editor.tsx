@@ -1,7 +1,11 @@
+import { SendIcon } from 'lucide-react';
+import React from 'react';
 import { CharacterMetadata, CompositeDecorator, ContentBlock, ContentState, Editor, EditorState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import Immutable from 'immutable';
 import { useEffect, useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -9,13 +13,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { SendIcon } from 'lucide-react';
-import React from 'react';
-import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
 
+
+// TODO: what to do about these globals?
 const timeout = 120000
 const FadeContext = React.createContext(true);
+
 
 function FadingSpan(props: any) {
   const fadeEnabled = React.useContext(FadeContext);
@@ -74,6 +77,10 @@ export default function EditorPage() {
   const [showPop, setShowPop] = useState(false);
   const [popShown, setPopShown] = useState(false);
   const [fadeEnabled, setFadeEnabled] = useState(true);
+  const [posting, setPosting] = useState(false);
+  const [postStatus, setPostStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const {data: session, status} = useSession();
+  const router = useRouter();
 
   const MAX_CHARS = 280;
   const PREMIUM_MAX_CHARS = 25000;
@@ -159,19 +166,71 @@ export default function EditorPage() {
   }
 
   const handlePost = async () => {
+    setPostStatus(null);
     // Check if the user is authenticated
-    const session = useSession();
-    if (!session) {
-      // Redirect to the login page
+    if (status === 'loading') {
+      return;
     }
 
-    // if free posts remaining, post
+    if (status === 'unauthenticated' || !session) {
+      // TODO: Make sure you save the editor state before directing to sign in 
+      signIn( "twitter", { callbackUrl: "/editor" });  
+      return;
+    }
 
-    // if no free posts remaining, check if they are premium
+    const accessToken = session.user.accessToken;
+
+    // TODO: if free posts remaining, post
+
+    // TODO: if no free posts remaining, check if they are premium
 
     // if premium, post
+    // NOTE: For now, we just post anyways
 
-    // if not premium, redirect to checkout
+    const text = editorState.getCurrentContent().getPlainText('\n');
+    if (text.trim().length === 0) {
+      setPostStatus({ type: 'error', message: 'Cannot post empty content.' });
+      // TODO: Add a toast. 
+      return;
+    }
+
+    const currentMax = popShown ? PREMIUM_MAX_CHARS : MAX_CHARS;
+    if (text.length > currentMax) {
+      setPostStatus({ type: 'error', message: `Tweet exceeds ${currentMax} characters.` }); 
+      // TODO: Add a toast.
+      return;
+    }
+
+    setPosting(true);
+
+    try {
+      const response = await fetch('/api/post-tweet', { 
+        method: 'POST', 
+        body: JSON.stringify({ text }), 
+        headers: { 'Content-Type': 'application/json' } 
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error (result.message || `Error: ${response.statusText}`);
+      }
+
+      // SUCCESS
+      setPostStatus({ type: 'success', message: 'Tweet posted successfully!' });
+      console.log('Posted Tweet ID:', result.data?.id);
+
+      // Empty the editor
+      const emptyContentState = ContentState.createFromText('');
+      setEditorState(EditorState.createWithContent(emptyContentState));
+
+    } catch (error: any) {
+      setPostStatus({ type: 'error', message: error.message || 'Failed to post tweet.' });
+      console.error('Error posting tweet:', error);
+    } finally {
+      setPosting(false);
+    }
+
+    // TODO: if not premium, redirect to checkout
   }
 
   return (
