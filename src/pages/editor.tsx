@@ -74,6 +74,7 @@ export default function EditorPage() {
   const [showPop, setShowPop] = useState(false);
   const [popShown, setPopShown] = useState(false);
   const [fadeEnabled, setFadeEnabled] = useState(true);
+  const {data: session, status} = useSession();
 
   const MAX_CHARS = 280;
   const PREMIUM_MAX_CHARS = 25000;
@@ -160,10 +161,17 @@ export default function EditorPage() {
 
   const handlePost = async () => {
     // Check if the user is authenticated
-    const session = useSession();
-    if (!session) {
-      // Redirect to the login page
+    if (status === 'loading') {
+      return;
     }
+    if (status === 'unauthenticated' || !session) {
+      // Redirect to the login page
+      // TODO: Implement redirect logic
+      return;
+    }
+
+    const accessToken = session.accessToken;
+
 
     // if free posts remaining, post
 
