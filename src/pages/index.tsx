@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
   const router = useRouter();
@@ -34,9 +35,9 @@ export default function Home() {
     <div className="h-screen flex flex-col">
       <header className="p-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          {/* Your logo here */}
           <span className="font-semibold text-lg">Scribe</span>
         </div>
+        <Logo className="absolute left-1/2 -translate-x-1/2" width={50} height={50} />
         <Button variant="ghost" className="text-sm" onClick={() => router.push("/signup")}>Sign in</Button>
       </header>
 
@@ -51,7 +52,10 @@ export default function Home() {
               Inspired by Will DePue&apos;s Ephemeral Notes, Scribe is a distraction-free space where text fades away, forcing you to think clearly and post with intention.
               <br />
               <br />
-              Will said it best - Writing is thinking. It&apos;s the greatest tool we have.
+              Will said it best:
+              <br /> 
+              <br />
+              <span className="italic">Writing is thinking. It&apos;s the greatest tool we have.</span>
             </p>
             <button onClick={updateState} className={"underline mt-1 text-medium font-medium text-primary"}>
               Start -&gt;
