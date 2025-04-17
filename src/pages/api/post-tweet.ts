@@ -67,7 +67,7 @@ export default async function handler(
 
   const { data: profileData, error: profileError } = await supabaseAdmin
     .from('profiles')
-    .select('id, plan, free_posts_used, monthly_posts_used, monthly_posts_limit, last_post_reset')  // Nice to be explicit about the fields we are fetching
+    .select('id, plan, free_posts_used, monthly_posts_used, monthly_post_limit, last_post_reset')  // Nice to be explicit about the fields we are fetching
     .eq('id', userId)
     .single();  // We know there will only be one profile per user
 
@@ -99,12 +99,12 @@ export default async function handler(
     canPost = true;
     incrementFree = true;  // Increment the free counter
     incrementMonthly = true;  // Increment the monthly counter
-    console.log(`User ${userId} using monthly post (${currentMonthlyUsed + 1} of ${profileData.monthly_posts_limit})`);
-  } else if (currentMonthlyUsed < profileData.monthly_posts_limit) {
+    console.log(`User ${userId} using monthly post (${currentMonthlyUsed + 1} of ${profileData.monthly_post_limit})`);
+  } else if (currentMonthlyUsed < profileData.monthly_post_limit) {
     canPost = true;
     incrementFree = false;
     incrementMonthly = true;
-    console.log(`User ${userId} using monthly post (${currentMonthlyUsed + 1} of ${profileData.monthly_posts_limit})`);
+    console.log(`User ${userId} using monthly post (${currentMonthlyUsed + 1} of ${profileData.monthly_post_limit})`);
   }
 
   if (!canPost) {
