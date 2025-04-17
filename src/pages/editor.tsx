@@ -1,4 +1,4 @@
-import { SendIcon } from 'lucide-react';
+import { SendIcon, LayoutDashboard } from 'lucide-react';
 import React from 'react';
 import { CharacterMetadata, CompositeDecorator, ContentBlock, ContentState, Editor, EditorState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
@@ -237,6 +237,16 @@ export default function EditorPage() {
     <FadeContext.Provider value={fadeEnabled}>
       {/*Outermost container for screen size and padding*/} 
       <div className="w-full px-4 py-8 flex justify-center">
+        {/* Dashboard button */}
+        <div className="absolute top-4 left-4">
+          <Button 
+            className="flex items-center gap-x-2" 
+            onClick={() => router.push('/dashboard')}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Dashboard
+          </Button>
+        </div>
         {/* Content container for editor*/}
         <div className="w-full max-w-[700px] flex flex-col">
           <div className="bg-card rounded-lg p-6">
