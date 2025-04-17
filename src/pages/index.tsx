@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
   const router = useRouter();
@@ -34,9 +35,9 @@ export default function Home() {
     <div className="h-screen flex flex-col">
       <header className="p-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          {/* Your logo here */}
           <span className="font-semibold text-lg">Scribe</span>
         </div>
+        <Logo className="absolute left-1/2 -translate-x-1/2" width={50} height={50} />
         <Button variant="ghost" className="text-sm" onClick={() => router.push("/signup")}>Sign in</Button>
       </header>
 

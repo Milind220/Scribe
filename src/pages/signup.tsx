@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import Layout from "@/components/Layout"
 import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/router"
+import { Logo } from "@/components/ui/logo"
 
 export default function SignIn() {
   const router = useRouter()
@@ -20,6 +21,7 @@ export default function SignIn() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </div>
+        <Logo className="mb-8" width={60} height={60} />
         <div className="max-w-md w-full p-8 bg-card rounded-lg shadow-sm">
           <h1 className="text-2xl font-semibold text-center mb-6">Sign In to Scribe</h1>
           <p className="text-muted-foreground text-center mb-8">
