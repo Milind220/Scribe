@@ -1,10 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
   const [pageState, setPageState] = useState(0);
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/editor");
+    }
+  }, [status, router]);
 
   const updateState = () => {
     setPageState(1);
@@ -12,6 +20,15 @@ export default function Home() {
       router.push("/editor");
     }, 1500); // Adjust timing to match CSS transition
   };
+
+  // Show loading state while checking session
+  if (status === "loading") {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col">
@@ -50,4 +67,4 @@ export default function Home() {
       </footer>
     </div>
   );
-};
+}
