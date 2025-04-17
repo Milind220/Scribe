@@ -25,8 +25,9 @@ export const authOptions: AuthOptions = ({
   },
   callbacks: {
     async jwt({ token, account, user }) {
-      // console.log("JWT Callback - Account:", account);      // See if account details (tokens) are present
-      // console.log("JWT Callback - Initial Token:", token);
+      console.log("JWT Callback - Account:", account);      // See if account details (tokens) are present
+      console.log("JWT Callback - Initial Token:", token);
+      console.log("JWT Callback - User:", user);
       
       // Initial user login
       if (account && user) {
@@ -35,12 +36,12 @@ export const authOptions: AuthOptions = ({
         token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined; // Convert to milliseconds for consistency.
         token.id = user.id;
       }
-      // console.log("JWT Callback - Returning Token:", token);
+      console.log("JWT Callback - Returning Token:", token);
       return token;
     },
     async session({ session, user, token }) {
-      // console.log(">>> SESSION CALLBACK START - Initial Session:", session);    // Log entry
-      // console.log(">>> SESSION CALLBACK START - Token:", token);                // Log token received
+      console.log(">>> SESSION CALLBACK START - Initial Session:", session);    // Log entry
+      console.log(">>> SESSION CALLBACK START - Token:", token);                // Log token received
       try {
         if (session.user && token.accessToken) {
           session.user.accessToken = token.accessToken as string;
@@ -56,11 +57,11 @@ export const authOptions: AuthOptions = ({
         }
         // NOTE: If you start storing posts, add JWT to session for RLS enforcement
 
-        // console.log(">>> SESSION CALLBACK SUCCESS - Returning Session:", session);  // Log success *before* returning
+        console.log(">>> SESSION CALLBACK SUCCESS - Returning Session:", session);  // Log success *before* returning
         return session;
 
       } catch (error) {
-        // console.error("!!! SESSION CALLBACK ERROR:", error); // Log the exact error
+        console.error("!!! SESSION CALLBACK ERROR:", error); // Log the exact error
         // Decide what to return on error. Maybe the original session?
         // Or re-throw the error if you want NextAuth's default handling?
         // Returning the original session might mask the error client-side, but logs it.
