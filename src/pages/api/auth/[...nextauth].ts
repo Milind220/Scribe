@@ -1,6 +1,8 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
 import { SupabaseAdapter } from "@auth/supabase-adapter"
+import { createClient } from '@supabase/supabase-js';
+
 
 export const authOptions: AuthOptions = ({
   providers: [
@@ -29,49 +31,67 @@ export const authOptions: AuthOptions = ({
       console.log("JWT Callback - Initial Token:", token);
       console.log("JWT Callback - User:", user);
       
-      // Initial user login
+      // Initial user login 
       if (account && user) {
+        token.id = user.id;
+        // Session callback no longer relies on the locally stored JWT.
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined; // Convert to milliseconds for consistency.
-        token.id = user.id;
       }
       console.log("JWT Callback - Returning Token:", token);
       return token;
     },
-    async session({ session, user, token }) {
+    async session({ session, user }) {
       console.log(">>> SESSION CALLBACK START - Initial Session:", session);    // Log entry
-      console.log(">>> SESSION CALLBACK START - Token:", token);                // Log token received
-      try {
-        if (session.user && token.accessToken) {
-          session.user.accessToken = token.accessToken as string;
-        } else {
-          // Log if expected data is missing even before erroring
-          if (!session.user) console.warn("SESSION CALLBACK - session.user is missing");
-          if (!token.accessToken) console.warn("SESSION CALLBACK - token.accessToken is missing");
-        }
-        if (user?.id) {
-          session.user.id = user.id;
-        } else if (token?.id) {
-          session.user.id = token.id as string;
-        }
-        // NOTE: If you start storing posts, add JWT to session for RLS enforcement
+      console.log(">>> SESSION CALLBACK START - User:", user);                  // Log user details
 
-        console.log(">>> SESSION CALLBACK SUCCESS - Returning Session:", session);  // Log success *before* returning
-        return session;
-
-      } catch (error) {
-        console.error("!!! SESSION CALLBACK ERROR:", error); // Log the exact error
-        // Decide what to return on error. Maybe the original session?
-        // Or re-throw the error if you want NextAuth's default handling?
-        // Returning the original session might mask the error client-side, but logs it.
-        return session;
-        // throw error; // Alternatively, re-throwing might provide more NextAuth debug info if debug mode is on.
+      if (user?.id) {
+        session.user.id = user.id 
+      } else {
+        console.warn("SESSION CALLBACK - user.id is missing from adapter response");
       }
+
+      // Fetch the access token from the database
+      try {
+        const supabaseUrl = process.env.SUPABASE_URL as string;
+        const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+
+        if (!supabaseUrl || !supabaseServiceRoleKey || !user.id) {
+          console.error("!!! SESSION CALLBACK ERROR: Missing supabase credentials or user ID");
+          // return session without attempting db query 
+          return session;
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+        const { data: account, error } = await supabaseAdmin
+          .from("accounts")
+          .select("access_token")
+          .eq("userId", user.id)
+          .eq("provider", "twitter")
+          .maybeSingle();
+
+        if (error) {
+          console.error("!!! SESSION CALLBACK ERROR: Failed to fetch access token from database", error);
+          // return session without attempting db query 
+          return session;
+        } else if (account?.access_token) {
+          // Update session with the fetched access token
+          console.log(">>> SESSION CALLBACK SUCCESS: Fetched access token from database");
+          session.user.accessToken = account.access_token;
+        } else {
+          console.warn(">>> SESSION CALLBACK WARNING: No access token found in database for user", user.id);
+        }
+      } catch (dbError) {
+        console.error("!!! SESSION CALLBACK ERROR: Failed to fetch access token from database", dbError); // Log the exact error
+      }
+      // NOTE: If you start storing posts, add JWT to session for RLS enforcement
+
+      console.log(">>> SESSION CALLBACK FINISHED - Returning Session:", session);  // Log success *before* returning
+      return session;
     }
   }, 
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
 })
 
 export default NextAuth(authOptions);
