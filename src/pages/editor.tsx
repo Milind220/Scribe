@@ -255,9 +255,9 @@ export default function EditorPage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="text-foreground/40 font-light hover:text-foreground/60 rounded"
+                      className="text-foreground/40 font-light hover:text-foreground/60 rounded mb-2.5"
                       onClick={() => {
                         setFadeEnabled(prev => !prev);
                       }}
