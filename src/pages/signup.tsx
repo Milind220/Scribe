@@ -2,12 +2,24 @@
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import Layout from "@/components/Layout"
-
+import { ArrowLeft } from "lucide-react"
+import { useRouter } from "next/router"
 
 export default function SignIn() {
+  const router = useRouter()
+  
   return (
     <Layout>
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+        {/* Back button */}
+        <div className="absolute top-4 left-4">
+          <Button 
+            className="flex items-center gap-x-2" 
+            onClick={() => router.push('/')}
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        </div>
         <div className="max-w-md w-full p-8 bg-card rounded-lg shadow-sm">
           <h1 className="text-2xl font-semibold text-center mb-6">Sign In to Scribe</h1>
           <p className="text-muted-foreground text-center mb-8">
