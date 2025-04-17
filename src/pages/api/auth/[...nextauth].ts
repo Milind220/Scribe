@@ -63,7 +63,7 @@ export const authOptions: AuthOptions = ({
           return session;
         }
 
-        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, { db: { schema: "next_auth" }});
 
         const { data: account, error } = await supabaseAdmin
           .from("accounts")
