@@ -26,6 +26,7 @@ export const authOptions: AuthOptions = ({
     strategy: "database",
   },
   callbacks: {
+    /*
     async jwt({ token, account, user }) {
       console.log("--- JWT CALLBACK TRIGGERED (Sign In event only) ---")
       // Initial user login 
@@ -42,6 +43,32 @@ export const authOptions: AuthOptions = ({
       }
       console.log("--- JWT CALLBACK FINISHED: Returning Token: ---", token);
       return token;
+    },
+    */
+    async signIn({ user, account, profile }) { // Ensure 'account' is destructured
+      console.log("--- SIGNIN CALLBACK TRIGGERED ---");
+      // Check if the account object exists and is from the Twitter provider
+      if (account?.provider === "twitter") {
+        console.log("SIGNIN Callback: Received account from provider:", account);
+        console.log("SIGNIN Callback: *** NEW Access Token from Provider ***:", account.access_token);
+        console.log("SIGNIN Callback: *** NEW Refresh Token from Provider ***:", account.refresh_token);
+        console.log("SIGNIN Callback: *** NEW Expires At from Provider (timestamp) ***:", account.expires_at);
+        console.log("SIGNIN Callback: *** Profile from Provider ***:", profile); // Log profile too if useful
+      } else {
+        console.log("SIGNIN Callback: Triggered for other reason/provider or no account present.");
+      }
+
+      // IMPORTANT: You must return true to allow the sign-in to complete
+      // You can add logic here to deny sign-in if needed, but for logging, just return true.
+      const isAllowedToSignIn = true;
+      if (isAllowedToSignIn) {
+        return true;
+      } else {
+        // Return false to display a default error message
+        return false;
+        // Or you can return a URL to redirect to:
+        // return '/unauthorized'
+      }
     },
     async session({ session, user }) {
       console.log(">>> SESSION CALLBACK START - Initial Session:", session);    // Log entry
