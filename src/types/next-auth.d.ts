@@ -5,6 +5,7 @@ declare module "next-auth" {
     user: {
       accessToken?: string
       id?: string
+      isVerified?: boolean
     } & DefaultSession["user"]
   }
 
