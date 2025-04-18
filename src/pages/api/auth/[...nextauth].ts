@@ -27,19 +27,20 @@ export const authOptions: AuthOptions = ({
   },
   callbacks: {
     async jwt({ token, account, user }) {
-      console.log("JWT Callback - Account:", account);      // See if account details (tokens) are present
-      console.log("JWT Callback - Initial Token:", token);
-      console.log("JWT Callback - User:", user);
-      
+      console.log("--- JWT CALLBACK TRIGGERED (Sign In event only) ---")
       // Initial user login 
-      if (account && user) {
-        token.id = user.id;
-        // Session callback no longer relies on the locally stored JWT.
+      if (account) {
+        console.log("JWT Callback: Received account from provider:", account);
+        console.log("JWT Callback: *** NEW Access Token from Provider ***:", account.access_token); // Log the fresh token
+
+        token.id = user?.id;
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined; // Convert to milliseconds for consistency.
+      } else {
+        console.log("JWT Callback: No account found. Not a sign in event.");
       }
-      console.log("JWT Callback - Returning Token:", token);
+      console.log("--- JWT CALLBACK FINISHED: Returning Token: ---", token);
       return token;
     },
     async session({ session, user }) {
@@ -79,6 +80,7 @@ export const authOptions: AuthOptions = ({
         } else if (account?.access_token) {
           // Update session with the fetched access token
           console.log(">>> SESSION CALLBACK SUCCESS: Fetched access token from database");
+          console.log(">>> SESSION CALLBACK: *** Existing Access Token from DB ***:", account.access_token);
           session.user.accessToken = account.access_token;
 
           // Check Twitter verification status
