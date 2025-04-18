@@ -80,13 +80,34 @@ export const authOptions: AuthOptions = ({
           // Update session with the fetched access token
           console.log(">>> SESSION CALLBACK SUCCESS: Fetched access token from database");
           session.user.accessToken = account.access_token;
+
+          // Check Twitter verification status
+          try {
+            const response = await fetch('https://api.twitter.com/2/users/me?user.fields=verified', {
+              headers: {
+                'Authorization': `Bearer ${account.access_token}`
+              }
+            });
+
+            if (!response.ok) {
+              throw new Error(`Twitter API error: ${response.status}`);
+            }
+
+            const userData = await response.json();
+            session.user.isVerified = userData.data?.verified || false;
+            console.log(">>> SESSION CALLBACK: User verification status:", session.user.isVerified);
+          } catch (twitterError) {
+            console.error("!!! SESSION CALLBACK ERROR: Failed to fetch Twitter verification status", twitterError);
+            session.user.isVerified = false; // Default to false if we can't verify
+          }
         } else {
           console.warn(">>> SESSION CALLBACK WARNING: No access token found in database for user", user.id);
+          session.user.isVerified = false; // Default to false if no access token
         }
       } catch (dbError) {
-        console.error("!!! SESSION CALLBACK ERROR: Failed to fetch access token from database", dbError); // Log the exact error
+        console.error("!!! SESSION CALLBACK ERROR: Failed to fetch access token from database", dbError);
+        session.user.isVerified = false; // Default to false if database error
       }
-      // NOTE: If you start storing posts, add JWT to session for RLS enforcement
 
       console.log(">>> SESSION CALLBACK FINISHED - Returning Session:", session);  // Log success *before* returning
       return session;
