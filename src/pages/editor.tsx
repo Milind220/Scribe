@@ -72,7 +72,17 @@ const decorator = new CompositeDecorator([
 
 export default function EditorPage() {
   const [blocks, setBlocks] = useState(new Map());
-  const [editorState, setEditorState] = useState(() => EditorState.createEmpty(decorator));
+  const [editorState, setEditorState] = useState(() => {
+    // Try to restore from localStorage on initial load
+    if (typeof window !== 'undefined') {
+      const savedContent = localStorage.getItem('editorContent');
+      if (savedContent) {
+        const contentState = ContentState.createFromText(savedContent);
+        return EditorState.createWithContent(contentState, decorator);
+      }
+    }
+    return EditorState.createEmpty(decorator);
+  });
   const [charCount, setCharCount] = useState(0);
   const [showPop, setShowPop] = useState(false);
   const [popShown, setPopShown] = useState(false);
@@ -173,8 +183,10 @@ export default function EditorPage() {
     }
 
     if (status === 'unauthenticated' || !session) {
-      // TODO: Make sure you save the editor state before directing to sign in 
-      signIn( "twitter", { callbackUrl: "/editor" });  
+      // Save editor content to localStorage before redirecting to sign in
+      const content = editorState.getCurrentContent().getPlainText();
+      localStorage.setItem('editorContent', content);
+      signIn("twitter", { callbackUrl: "/editor" });  
       return;
     }
 
@@ -218,6 +230,9 @@ export default function EditorPage() {
       // SUCCESS
       setPostStatus({ type: 'success', message: 'Tweet posted successfully!' });
       console.log('Posted Tweet ID:', result.data?.id);
+
+      // Clear localStorage after successful post
+      localStorage.removeItem('editorContent');
 
       // Empty the editor
       const emptyContentState = ContentState.createFromText('');
