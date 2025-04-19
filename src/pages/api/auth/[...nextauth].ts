@@ -1,8 +1,48 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth, { Account, AuthOptions } from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
 import { SupabaseAdapter } from "@auth/supabase-adapter"
 import { createClient } from '@supabase/supabase-js';
+import { AdapterAccount } from "next-auth/adapters";
 
+const baseAdapter = SupabaseAdapter({
+  url: process.env.SUPABASE_URL as string,
+  secret: process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+});
+
+
+const customLinkAccount = async (account: AdapterAccount) => {
+  console.log("--- CUSTOM LINK ACCOUNT TRIGGERED ---");
+  console.log("CUSTOM LINK ACCOUNT: Received account:", account);
+
+  const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL as string, 
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+    {
+      db: { schema: "next_auth" },
+    }
+  );
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("accounts")
+      .upsert(account);
+        
+    if (error) {
+      console.error("!!! CUSTOM LINK ACCOUNT ERROR: Failed to upsert account", error);
+      throw error;
+    } else {
+      console.log("!!! CUSTOM LINK ACCOUNT SUCCESS: Upserted attempted for providerAccountId", account.providerAccountId);
+    }
+  } catch (error) {
+    console.error("!!! CUSTOM LINK ACCOUNT CATASTROPHIC ERROR: Failed to link account", error);
+    throw error;
+  }
+}
+
+const adapter = {
+  ...baseAdapter,
+  linkAccount: customLinkAccount,
+}
 
 export const authOptions: AuthOptions = ({
   providers: [
@@ -18,10 +58,7 @@ export const authOptions: AuthOptions = ({
       }
     )
   ],
-  adapter: SupabaseAdapter({
-    url: process.env.SUPABASE_URL as string,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY as string,
-  }),
+  adapter: adapter,
   session: {
     strategy: "database",
   },
