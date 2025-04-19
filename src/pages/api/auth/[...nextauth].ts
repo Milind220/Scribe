@@ -91,21 +91,54 @@ export const authOptions: AuthOptions = ({
         console.log("SIGNIN Callback: *** NEW Refresh Token from Provider ***:", account.refresh_token);
         console.log("SIGNIN Callback: *** NEW Expires At from Provider (timestamp) ***:", account.expires_at);
         console.log("SIGNIN Callback: *** Profile from Provider ***:", profile); // Log profile too if useful
-      } else {
-        console.log("SIGNIN Callback: Triggered for other reason/provider or no account present.");
-      }
+      // --- Attempt manual update of account tokens here ---
+        // Check if essential fields for update are present
+        if (account.access_token && account.providerAccountId && account.provider) {
+          try {
+            console.log(`SIGNIN Callback: Attempting to UPDATE tokens in DB for providerAccountId: ${account.providerAccountId}`);
+            const supabase = createClient( // Initialize Supabase client
+                process.env.SUPABASE_URL as string,
+                process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+                { db: { schema: "next_auth" } }
+            );
 
-      // IMPORTANT: You must return true to allow the sign-in to complete
-      // You can add logic here to deny sign-in if needed, but for logging, just return true.
-      const isAllowedToSignIn = true;
-      if (isAllowedToSignIn) {
-        return true;
-      } else {
-        // Return false to display a default error message
-        return false;
-        // Or you can return a URL to redirect to:
-        // return '/unauthorized'
+            // Prepare the data payload for the update, including all relevant token fields
+            const updateData: any = { // Use 'any' or define a specific type
+              access_token: account.access_token,
+            };
+            // Conditionally add other fields ONLY if they exist in the account object
+            if (account.refresh_token) updateData.refresh_token = account.refresh_token;
+            if (account.expires_at) updateData.expires_at = account.expires_at;
+            if (account.token_type) updateData.token_type = account.token_type;
+            if (account.scope) updateData.scope = account.scope;
+            if (account.id_token) updateData.id_token = account.id_token;
+            // Add any other fields from the 'accounts' table schema that might be in 'account'
+
+            // Perform the update operation
+            const { error } = await supabase
+                .from('accounts')
+                .update(updateData) // Update with the new token data
+                .match({ // Use match to specify WHERE clause
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId
+                 });
+
+            if (error) {
+              // Log the error but don't block sign-in because of it
+              console.error("SIGNIN Callback: Error updating account tokens in DB:", error);
+            } else {
+              console.log("SIGNIN Callback: Successfully updated account tokens in DB via manual update.");
+            }
+          } catch (e) {
+            console.error("SIGNIN Callback: Exception during manual token update:", e);
+          }
+        } else {
+             console.log("SIGNIN Callback: Missing essential account info (token/ID/provider), skipping manual token update.");
+        }
+        // --- End manual update ---
       }
+      // Always return true to allow sign-in to proceed
+      return true;
     },
     async session({ session, user }) {
       console.log(">>> SESSION CALLBACK START - Initial Session:", session);    // Log entry
