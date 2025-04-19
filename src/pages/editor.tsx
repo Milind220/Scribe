@@ -94,7 +94,7 @@ export default function EditorPage() {
 
   const MAX_CHARS = 280;
   const PREMIUM_MAX_CHARS = 25000;
-  const isPremium = true;  // For now, we're pretending to be premium
+  const isPremium = false;  // For now all users limited to 280 chars
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -160,7 +160,7 @@ export default function EditorPage() {
     const newCharCount = newEditorState.getCurrentContent().getPlainText().length;
     setCharCount(newCharCount);
 
-    if (isPremium && charCount === MAX_CHARS) {
+    if (charCount === MAX_CHARS) {
       setShowPop(true);
       setTimeout(() => setShowPop(false), 1000);
     }
@@ -199,15 +199,21 @@ export default function EditorPage() {
     // if premium, post
     // NOTE: For now, we just post anyways
 
+    // Trim content to 280 characters
     const text = editorState.getCurrentContent().getPlainText('\n');
-    if (text.trim().length === 0) {
+    const trimmedText = text.slice(0, MAX_CHARS);
+
+    if (trimmedText.trim().length === 0) {
       setPostStatus({ type: 'error', message: 'Cannot post empty content.' });
       // TODO: Add a toast. 
       return;
     }
 
+    /*
     const currentMax = popShown ? PREMIUM_MAX_CHARS : MAX_CHARS;
-    if (text.length > currentMax) {
+    */
+    const currentMax = MAX_CHARS;
+    if (trimmedText.length > currentMax) {
       setPostStatus({ type: 'error', message: `Tweet exceeds ${currentMax} characters.` }); 
       // TODO: Add a toast.
       return;
@@ -218,7 +224,7 @@ export default function EditorPage() {
     try {
       const response = await fetch('/api/post-tweet', { 
         method: 'POST', 
-        body: JSON.stringify({ text }), 
+        body: JSON.stringify({ text: trimmedText }), 
         headers: { 'Content-Type': 'application/json' } 
       });
 
@@ -269,12 +275,16 @@ export default function EditorPage() {
             <div className="flex flex-row items-center justify-between w-full">
               <p className='text-foreground/70 mb-2.5 font-semibold'>Scribe</p>
               <p 
-                className={`text-foreground/70 transition-all duration-300 ${
+                className={`transition-all duration-300 ${
                   showPop ? 'scale-150 font-bold' : ''
-                }`}
+                } ${charCount > MAX_CHARS ? 'text-amber-500' : 'text-foreground/70'}`}
                 style={{ opacity: getOpacity() }}
               >
+                {/*
+                /
                 {charCount}/{popShown ? PREMIUM_MAX_CHARS : MAX_CHARS}
+                */}
+                {charCount}/{MAX_CHARS}
               </p>
               <TooltipProvider>
                 <Tooltip>
