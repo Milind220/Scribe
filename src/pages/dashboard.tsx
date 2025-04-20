@@ -5,6 +5,7 @@ import Layout from "@/components/Layout"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
+import { StripeCheckoutSessionResponse } from "@/types/checkout"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string)
 
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const router = useRouter()
   const [subscribed, setSubscribed] = useState(false) // You'll need to get this from your DB
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (status != "loading" && !session) {
@@ -42,8 +43,15 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
 
+    // Check if user is logged in  
+    if (!session) {
+      setLoading(false);
+      setError("User not logged in");
+      return;
+    }
+
     try {
-      // Call my backend API route to create a checkout session
+      // Call backend API route to create a checkout session
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
@@ -52,12 +60,29 @@ export default function Dashboard() {
         // Can add body if extra data required by the backend API
       })
 
-      const data = await response.json();
-      
+      // Check response status first
       if (!response.ok) {
-        throw new Error(data.error.message);
+        // try to parse the error from the response
+        let errMessage = response.statusText;
+        try {
+          const errorData = await response.json() as StripeCheckoutSessionResponse;
+          if ('error' in errorData) {
+            errMessage = errorData.error.message;
+          }
+        } catch (parseError) {
+          console.error("Error parsing error response", parseError);
+        }
+        throw new Error(`API Error: ${response.status} ${errMessage}`);
       }
-      if (!session?.sessionId) {
+
+      // If response OK, parse the JSON response
+      const checkoutSessionData = await response.json() as StripeCheckoutSessionResponse; 
+      if ('error' in checkoutSessionData) {
+        throw new Error(checkoutSessionData.error.message);
+      }
+
+      // Check if sessionId is present
+      if (!checkoutSessionData.sessionId) {
         throw new Error("No session ID found");
       }
 
@@ -67,15 +92,16 @@ export default function Dashboard() {
       }
 
       const { error } = await stripe.redirectToCheckout({ 
-        sessionId: session.sessionId 
+        sessionId: checkoutSessionData.sessionId
       });
+
       if (error) {
         console.error("Error redirecting to checkout", error);
         throw new Error(error.message);
       }
     } catch (error) {
       console.error("Error creating checkout session", error);
-      setError(error.message);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setLoading(false)
     }
