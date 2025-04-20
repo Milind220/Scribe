@@ -6,3 +6,11 @@ export type StripeCheckoutSessionResponse = {
     message: string;
   }
 };
+
+export type StripePortalSessionResponse = {
+  url: string;
+} | { 
+  error: {
+    message: string;
+  }
+};

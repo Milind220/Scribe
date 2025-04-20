@@ -5,7 +5,7 @@ import Layout from "@/components/Layout"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
-import { StripeCheckoutSessionResponse } from "@/types/checkout"
+import { StripeCheckoutSessionResponse } from "@/types/stripe"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string)
 

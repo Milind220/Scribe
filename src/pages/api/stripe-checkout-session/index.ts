@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import Stripe from 'stripe';
-import { authOptions } from './auth/[...nextauth]';
-import { StripeCheckoutSessionResponse } from '@/types/checkout';
+import { authOptions } from '../auth/[...nextauth]';
+import { StripeCheckoutSessionResponse } from '@/types/stripe';
 import { createClient } from '@supabase/supabase-js';
 
 
