@@ -4,12 +4,17 @@ import { Button } from "@/components/ui/button"
 import Layout from "@/components/Layout"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
+import { loadStripe } from "@stripe/stripe-js"
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string)
 
 export default function Dashboard() {
   // status would be either "loading", "authenticated", or "unauthenticated"
   const { data: session, status } = useSession();
   const router = useRouter()
   const [subscribed, setSubscribed] = useState(false) // You'll need to get this from your DB
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (status != "loading" && !session) {
@@ -33,13 +38,46 @@ export default function Dashboard() {
     }
   }
 
-  const handleSubscription = () => {
-    if (subscribed) {
-      // Handle unsubscribe
-      setSubscribed(false)
-    } else {
-      // Redirect to payment page or open modal
-      router.push("/pricing")
+  const handleSubscription = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Call my backend API route to create a checkout session
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Can add body if extra data required by the backend API
+      })
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error.message);
+      }
+      if (!session?.sessionId) {
+        throw new Error("No session ID found");
+      }
+
+      const stripe = await stripePromise
+      if (!stripe) {
+        throw new Error("Stripe not loaded");
+      }
+
+      const { error } = await stripe.redirectToCheckout({ 
+        sessionId: session.sessionId 
+      });
+      if (error) {
+        console.error("Error redirecting to checkout", error);
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error("Error creating checkout session", error);
+      setError(error.message);
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -68,7 +106,7 @@ export default function Dashboard() {
                 variant={subscribed ? "destructive" : "default"}
                 onClick={handleSubscription}
               >
-                {subscribed ? "Unsubscribe" : "Subscribe"}
+                {subscribed ? "Manage Subscription" : "Subscribe"}
               </Button>
 
               <div className="pt-4 border-t">
