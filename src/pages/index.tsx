@@ -67,7 +67,6 @@ export default function Home() {
       <footer className="p-4 flex justify-center gap-6 text-xs text-muted-foreground">
         <a href="/privacy" className="hover:underline">Privacy</a>
         <a href="/terms" className="hover:underline">Terms</a>
-        <a href="/pricing" className="hover:underline">Pricing</a>
       </footer>
     </div>
   );
