@@ -40,6 +40,7 @@ export default function Dashboard() {
   }
 
   const handleSubscription = async () => {
+    console.log("!!! handleSubscription triggered");
     setLoading(true);
     setError(null);
 
