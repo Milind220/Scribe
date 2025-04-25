@@ -60,9 +60,11 @@ export default function Dashboard() {
         },
         // Can add body if extra data required by the backend API
       })
+      console.log("!!! response", response);
 
       // Check response status first
       if (!response.ok) {
+        console.log("!!! response not ok");
         // try to parse the error from the response
         let errMessage = response.statusText;
         try {
@@ -75,6 +77,7 @@ export default function Dashboard() {
         }
         throw new Error(`API Error: ${response.status} ${errMessage}`);
       }
+      console.log("!!! response ok");
 
       // If response OK, parse the JSON response
       const checkoutSessionData = await response.json() as StripeCheckoutSessionResponse; 

@@ -36,12 +36,15 @@ export default async function handler(
   req: NextApiRequest, 
   res: NextApiResponse<StripeCheckoutSessionResponse>
 ) {
+  console.log("!!! create-checkout-session handler called");
   // If not POST, return 405 Method Not Allowed
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
+    console.log("!!! create-checkout-session handler: Method Not Allowed", req.method);
     return res.status(405).json({ error: { message: `Method ${req.method} Not Allowed` } });
   }
 
+  console.log("!!! create-checkout-session handler: Checking if user is logged in");
   // Check if user is logged in - unauthenticated users can't create checkout sessions
   const session = await getServerSession(req, res, authOptions);
   const userId = session?.user?.id;
