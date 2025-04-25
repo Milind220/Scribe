@@ -45,6 +45,7 @@ const adapter = {
 }
 
 export const authOptions: AuthOptions = ({
+  debug: true,
   providers: [
     TwitterProvider({
         clientId: process.env.TWITTER_CLIENT_ID as string,

@@ -1,7 +1,7 @@
 // pages/api/post-twwet.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import { authOptions } from './auth/[...nextauth]';
+import { authOptions } from '../auth/[...nextauth]';
 import { createClient } from '@supabase/supabase-js';
 
 
