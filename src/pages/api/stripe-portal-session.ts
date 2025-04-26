@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import Stripe from 'stripe';
-import { authOptions } from '../auth/[...nextauth]';
 import { createClient } from '@supabase/supabase-js';
 import { StripePortalSessionResponse } from '@/types/stripe';
+import { authOptions } from './auth/[...nextauth]';
 
 
 const supabaseUrl = process.env.SUPABASE_URL;
