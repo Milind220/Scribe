@@ -12,9 +12,9 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const appUrl = process.env.APP_URL || 'http://localhost:3000';
 
 
+console.log("supabaseUrl", supabaseUrl);
+console.log("supabaseServiceRoleKey", supabaseServiceRoleKey);
 if (!supabaseUrl || !supabaseServiceRoleKey) {
-  console.log("supabaseUrl", supabaseUrl);
-  console.log("supabaseServiceRoleKey", supabaseServiceRoleKey);
   throw new Error('Supabase environment variables are not set');
 }
 
