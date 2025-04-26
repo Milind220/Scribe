@@ -25,8 +25,8 @@ if (!stripeSecretKey) {
 
 
 const supabaseAdmin = createClient(
-  supabaseUrl as string,
-  supabaseServiceRoleKey as string
+  supabaseUrl,
+  supabaseServiceRoleKey 
 );
 
 
