@@ -6,6 +6,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
 import { StripeCheckoutSessionResponse } from "@/types/stripe"
+import { url } from "inspector"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string)
 
@@ -18,8 +19,17 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("session_id")) {
+      setSubscribed(true);
+      router.replace("/dashboard", undefined, { shallow: true }); // This is to avoid redirect loop
+    }
+    if (status === 'authenticated' && session?.user?.plan === 'price_1RFW272U8Bk8KQCEzbgQK5bh') { // Check your actual plan value
+      console.log("Session data confirms user is subscribed.");
+      setSubscribed(true);
+    }
     if (status != "loading" && !session) {
-      router.push("/signup")
+      router.push("/signup");
     }
   }, [session, status, router])
 
