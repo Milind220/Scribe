@@ -27,7 +27,7 @@ const supabaseAdmin = createClient(
 );
 
 
-const stripe = new Stripe(stripeSecretKey as string);
+const stripe = new Stripe(stripeSecretKey as string, {timeout: 20000});
 const priceId = 'price_1RFW272U8Bk8KQCEzbgQK5bh';
 
 
@@ -100,6 +100,7 @@ export default async function handler(
       if (!stripeCustomerId) {
         throw new Error('CRITICAL: Stripe customer ID not found in DB or created.');
       }
+      console.log("!!! create-checkout-session handler: Stripe customer ID found in DB or created >>>", stripeCustomerId);
 
       const successUrl = `${appUrl}/dashboard`;
       const cancelUrl = `${appUrl}/dashboard`;
