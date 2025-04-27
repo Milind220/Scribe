@@ -40,7 +40,6 @@ export default function Dashboard() {
   }
 
   const handleSubscription = async () => {
-    console.log("!!! handleSubscription triggered");
     setLoading(true);
     setError(null);
 
@@ -50,6 +49,7 @@ export default function Dashboard() {
       setError("User not logged in");
       return;
     }
+    console.log(">>> handleSubscription triggered: Starting process >>>")
 
     try {
       // Call backend API route to create a checkout session
@@ -60,11 +60,11 @@ export default function Dashboard() {
         },
         // Can add body if extra data required by the backend API
       })
-      console.log("!!! response", response);
+      console.log(">>> handleSubscription: response received >>>", response);
 
       // Check response status first
       if (!response.ok) {
-        console.log("!!! response not ok");
+        console.log(">>> handleSubscription: response not ok >>>");
         // try to parse the error from the response
         let errMessage = response.statusText;
         try {
@@ -72,26 +72,32 @@ export default function Dashboard() {
           if ('error' in errorData) {
             errMessage = errorData.error.message;
           }
+          console.log(">>> parsed error message: ", errMessage);
         } catch (parseError) {
           console.error("Error parsing error response", parseError);
         }
         throw new Error(`API Error: ${response.status} ${errMessage}`);
       }
-      console.log("!!! response ok");
+      console.log(">>> handleSubscription: response ok >>>");
 
       // If response OK, parse the JSON response
       const checkoutSessionData = await response.json() as StripeCheckoutSessionResponse; 
+      console.log(">>> handleSubscription: checkoutSessionData received >>>", checkoutSessionData);
+
       if ('error' in checkoutSessionData) {
+        console.log(">>> handleSubscription: error in checkoutSessionData >>>", checkoutSessionData.error);
         throw new Error(checkoutSessionData.error.message);
       }
 
       // Check if sessionId is present
       if (!checkoutSessionData.sessionId) {
+        console.log(">>> handleSubscription: no session ID found >>>");
         throw new Error("No session ID found");
       }
 
       const stripe = await stripePromise
       if (!stripe) {
+        console.log(">>> handleSubscription: Stripe not loaded >>>");
         throw new Error("Stripe not loaded");
       }
 
@@ -99,14 +105,17 @@ export default function Dashboard() {
         sessionId: checkoutSessionData.sessionId
       });
 
+      console.log(">>> handleSubscription: Stripe redirectToCheckout call completed >>>");
       if (error) {
-        console.error("Error redirecting to checkout", error);
+        console.log(">>> handleSubscription: Stripe redirectToCheckout error >>>", error);
         throw new Error(error.message);
       }
+      console.log(">>> handleSubscription: Stripe redirectToCheckout call completed successfully >>>");
     } catch (error) {
-      console.error("Error creating checkout session", error);
+      console.log(">>> handleSubscription: Error creating checkout session >>>", error);
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
+      console.log(">>> handleSubscription: Setting loading to false >>>");
       setLoading(false)
     }
   }
