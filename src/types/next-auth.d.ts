@@ -8,8 +8,4 @@ declare module "next-auth" {
       plan?: string
     } & DefaultSession["user"]
   }
-
-  interface User {
-    plan?: string
-  }
 }
