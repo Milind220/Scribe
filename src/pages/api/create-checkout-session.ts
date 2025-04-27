@@ -104,6 +104,7 @@ export default async function handler(
       const successUrl = `${appUrl}/dashboard`;
       const cancelUrl = `${appUrl}/dashboard`;
 
+      console.log("!!! create-checkout-session handler: Creating checkout session >>>");
       const checkoutSession = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         line_items: [{
@@ -115,6 +116,7 @@ export default async function handler(
         cancel_url: cancelUrl,
         // NOTE: maybe add email to the session so that you can use it here as well - potentially for emailing confirmation.
       })
+      console.log("!!! create-checkout-session handler: checkoutSession created >>>", checkoutSession);
 
       return res.status(200).json({ sessionId: checkoutSession.id });
     }
