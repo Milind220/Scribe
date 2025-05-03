@@ -148,8 +148,7 @@ export default async function handler(
         mode: 'subscription',
         success_url: successUrl,
         cancel_url: cancelUrl,
-        // Consider adding metadata for linking back if needed
-        // metadata: { user_id: userId }
+        metadata: { user_id: userId }
         // Consider pre-filling email if desired
         // customer_email: session.user.email ?? undefined
       });
