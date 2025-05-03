@@ -55,6 +55,7 @@ Deno.serve(async (req: Request) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     if (event.type === "checkout.session.completed") {
+      console.log(">>> Checkout session completed!");
       const session = event.data.object as Stripe.Checkout.Session;
 
       // Get the user ID from the session metadata
