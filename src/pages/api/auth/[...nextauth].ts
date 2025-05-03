@@ -190,7 +190,7 @@ export const authOptions: AuthOptions = ({
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
         const { data: subscription, error } = await supabase
           .from("profiles")
-          .select("plan")
+          .select("stripe_subscription_plan")
           .eq("id", user.id)
           .single();
 
@@ -198,8 +198,8 @@ export const authOptions: AuthOptions = ({
           console.error("!!! SESSION CALLBACK ERROR: Failed to fetch subscription status from database", error);
           // return session without attempting db query 
           return session;
-        } else if (subscription?.plan) {
-          session.user.plan = subscription.plan;
+        } else if (subscription?.stripe_subscription_plan) {
+          session.user.plan = subscription.stripe_subscription_plan;
         } else {
           console.warn("!!! SESSION CALLBACK WARNING: No subscription status found in database for user", user.id);
         }
