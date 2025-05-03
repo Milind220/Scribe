@@ -58,7 +58,7 @@ Deno.serve(async (req: Request) => {
       const session = event.data.object as Stripe.Checkout.Session;
 
       // Get the user ID from the session metadata
-      const userId = session.metadata?.userId;
+      const userId = session.metadata?.user_id;
       if (!userId) {
         throw new Error("Missing user ID in session metadata");
       }
