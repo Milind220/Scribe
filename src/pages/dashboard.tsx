@@ -50,6 +50,12 @@ export default function Dashboard() {
   }
 
   const handleSubscription = async () => {
+    if (subscribed) {
+      console.log(">>> handleSubscription: User is already subscribed >>>");
+      // TODO: redirect to manage subscription page
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
