@@ -53,7 +53,7 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/stripe/create-portal-session', {
+      const response = await fetch('/api/create-portal-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
