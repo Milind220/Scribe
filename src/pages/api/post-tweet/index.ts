@@ -1,7 +1,7 @@
 // pages/api/post-twwet.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import { authOptions } from './auth/[...nextauth]';
+import { authOptions } from '../auth/[...nextauth]';
 import { createClient } from '@supabase/supabase-js';
 
 
@@ -46,6 +46,7 @@ export default async function handler(
   const session = await getServerSession(req, res, authOptions);
   const userId = session?.user?.id;
   const accessToken = session?.user?.accessToken;
+  const plan = session?.user?.plan;
 
   // --- Check if User is Logged In ---
   if (!session || !userId) {
@@ -100,7 +101,7 @@ export default async function handler(
     incrementFree = true;  // Increment the free counter
     incrementMonthly = true;  // Increment the monthly counter
     console.log(`User ${userId} using monthly post (${currentMonthlyUsed + 1} of ${profileData.monthly_post_limit})`);
-  } else if (currentMonthlyUsed < profileData.monthly_post_limit) {
+  } else if (plan != 'free' && currentMonthlyUsed < profileData.monthly_post_limit) {
     canPost = true;
     incrementFree = false;
     incrementMonthly = true;

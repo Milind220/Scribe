@@ -45,6 +45,7 @@ const adapter = {
 }
 
 export const authOptions: AuthOptions = ({
+  debug: true,
   providers: [
     TwitterProvider({
         clientId: process.env.TWITTER_CLIENT_ID as string,
@@ -149,18 +150,16 @@ export const authOptions: AuthOptions = ({
       } else {
         console.warn("SESSION CALLBACK - user.id is missing from adapter response");
       }
-
+      // Instantiate supabase client
+      const supabaseUrl = process.env.SUPABASE_URL as string;
+      const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+      if (!supabaseUrl || !supabaseServiceRoleKey || !user.id) {
+        console.error("!!! SESSION CALLBACK ERROR: Missing supabase credentials or user ID");
+        // return session without attempting db query 
+        return session;
+      }
       // Fetch the access token from the database
       try {
-        const supabaseUrl = process.env.SUPABASE_URL as string;
-        const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
-
-        if (!supabaseUrl || !supabaseServiceRoleKey || !user.id) {
-          console.error("!!! SESSION CALLBACK ERROR: Missing supabase credentials or user ID");
-          // return session without attempting db query 
-          return session;
-        }
-
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, { db: { schema: "next_auth" }});
 
         const { data: account, error } = await supabaseAdmin
@@ -186,6 +185,27 @@ export const authOptions: AuthOptions = ({
         console.error("!!! SESSION CALLBACK ERROR: Failed to fetch access token from database", dbError); // Log the exact error
       }
       // NOTE: If you start storing posts, add JWT to session for RLS enforcement
+      // Fetch user's subscription status from Stripe
+      try {
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        const { data: subscription, error } = await supabase
+          .from("profiles")
+          .select("stripe_subscription_plan")
+          .eq("id", user.id)
+          .single();
+
+        if (error) {
+          console.error("!!! SESSION CALLBACK ERROR: Failed to fetch subscription status from database", error);
+          // return session without attempting db query 
+          return session;
+        } else if (subscription?.stripe_subscription_plan) {
+          session.user.plan = subscription.stripe_subscription_plan;
+        } else {
+          console.warn("!!! SESSION CALLBACK WARNING: No subscription status found in database for user", user.id);
+        }
+      } catch (dbError) {
+        console.error("!!! SESSION CALLBACK ERROR: Failed to fetch subscription status from database", dbError); // Log the exact error
+      }
 
       console.log(">>> SESSION CALLBACK FINISHED - Returning Session:", session);  // Log success *before* returning
       return session;
