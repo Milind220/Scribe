@@ -49,13 +49,38 @@ export default function Dashboard() {
     }
   }
 
-  const handleSubscription = async () => {
-    if (subscribed) {
-      console.log(">>> handleSubscription: User is already subscribed >>>");
-      // TODO: redirect to manage subscription page
-      return;
-    }
+  const handleManageSubscription = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Failed to create portal session.');
+      }
+
+      // Redirect user to the Stripe Portal URL
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+           throw new Error('Portal URL not received from server.');
+      }
+
+    } catch (err: any) {
+      console.error('Error managing subscription:', err);
+      setError(err.message || 'An unexpected error occurred.');
+      setLoading(false); // Stop loading on error
+    }
+  };
+
+  const handleSubscription = async () => {
     setLoading(true);
     setError(null);
 
@@ -159,7 +184,7 @@ export default function Dashboard() {
               <Button
                 className="w-full"
                 variant={subscribed ? "destructive" : "default"}
-                onClick={handleSubscription}
+                onClick={subscribed ? handleManageSubscription : handleSubscription}
               >
                 {subscribed ? "Manage Subscription" : "Subscribe"}
               </Button>
