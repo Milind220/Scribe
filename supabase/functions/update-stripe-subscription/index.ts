@@ -54,8 +54,8 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    if (event.type === "billing_portal.configuration.updated") {
-      console.log(">>> Billing portal configuration updated!");
+    if (event.type === "customer.subscription.updated") {
+      console.log(">>> Stripe subscription updated!");
       const session = event.data.object as Stripe.BillingPortal.Configuration;
       
       // Retrieve the subscription details from the session 
@@ -68,6 +68,7 @@ Deno.serve(async (req: Request) => {
         plan: subscription.items.data[0].price.id,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        active: subscription.status === subscription.status,
       };
 
       console.log(">>> Subscription details:", subscriptionDetails);
@@ -88,6 +89,26 @@ Deno.serve(async (req: Request) => {
         return new Response("Error updating user subscription", { status: 500 });
       }
       
+      console.log(">>> User subscription updated successfully!");
+    }
+
+    if (event.type === "customer.subscription.deleted") {
+      console.log(">>> Stripe subscription deleted!");
+      const subscriptionId = event.data.object.id;
+
+      // Update the user's subscription status in Supabase
+      const { _data, error } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          stripe_subscription_active: false,
+        })
+        .eq("stripe_subscription_id", subscriptionId);
+
+      if (error) {
+        console.error(">>> Error updating user subscription:", error);
+        return new Response("Error updating user subscription", { status: 500 });
+      }
+
       console.log(">>> User subscription updated successfully!");
     }
   } catch (err) {
