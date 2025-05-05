@@ -1,0 +1,99 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Stripe } from "https://esm.sh/stripe@17.5.0?target=deno";
+
+const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY") as string;
+const stripeWebhookSigningSecret = Deno.env.get("STRIPE_WEBHOOK_SIGNING_SECRET") as string;
+const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
+
+Deno.serve(async (req: Request) => {
+  console.log(">>> Stripe webhook received!");
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Missing Supabase environment variables");
+  }
+  if (!stripeSecretKey || !stripeWebhookSigningSecret) {
+    throw new Error("Missing Stripe secret key or webhook signing secret");
+  }
+
+  const stripe = new Stripe(stripeSecretKey, {
+    apiVersion: "2022-11-15",
+    httpClient: Stripe.createFetchHttpClient(),
+  });
+
+  const cryptoProvider = Stripe.createSubtleCryptoProvider();
+  
+  // Check if the request is a POST request
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
+  // Check if valid Stripe signature
+  const signature = req.headers.get("stripe-signature");
+  if (!signature) {
+    return new Response("Missing Stripe signature", { status: 400 });
+  }
+
+  // Verify the event
+  const body = await req.text();
+  let event: Stripe.Event;
+  try {
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      stripeWebhookSigningSecret,
+      undefined,
+      cryptoProvider
+    );
+  } catch (err) {
+    return new Response(`Webhook error: ${err instanceof Error ? err.message : 'Unknown error'}`, { status: 400 });
+  }
+  console.log(">>> Stripe event verified!");
+  console.log("event", event);
+
+  try {
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    if (event.type === "billing_portal.configuration.updated") {
+      console.log(">>> Billing portal configuration updated!");
+      const session = event.data.object as Stripe.BillingPortal.Configuration;
+      
+      // Retrieve the subscription details from the session 
+      const subscriptionId = session.subscription as string;
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      // Extract the subscription details
+      const subscriptionDetails = {
+        id: subscription.id,
+        plan: subscription.items.data[0].price.id,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      };
+
+      console.log(">>> Subscription details:", subscriptionDetails);
+      console.log(">>> Updating user subscription in Supabase...");
+
+      // Update the user's subscription status in Supabase
+      const { _data, error } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          stripe_subscription_plan: subscriptionDetails.plan,
+          stripe_subscription_current_period_end: subscriptionDetails.currentPeriodEnd,
+          stripe_subscription_cancel_at_period_end: subscriptionDetails.cancelAtPeriodEnd,
+        })
+        .eq("stripe_subscription_id", subscriptionId);
+
+      if (error) {
+        console.error(">>> Error updating user subscription:", error);
+        return new Response("Error updating user subscription", { status: 500 });
+      }
+      
+      console.log(">>> User subscription updated successfully!");
+    }
+  } catch (err) {
+    console.error(">>> Error processing Stripe webhook:", err);
+    return new Response("Error processing Stripe webhook", { status: 500 });
+  }
+
+  return new Response("Event not handled", { status: 200 });
+});
