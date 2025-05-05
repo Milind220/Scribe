@@ -24,7 +24,7 @@ export default function Dashboard() {
       setSubscribed(true);
       router.replace("/dashboard", undefined, { shallow: true }); // This is to avoid redirect loop
     }
-    if (status === 'authenticated' && session?.user?.plan === 'price_1RFW272U8Bk8KQCEzbgQK5bh') { // Check your actual plan value
+    if (status === 'authenticated' && session?.user?.planActive) { // Check your actual plan value
       console.log("Session data confirms user is subscribed.");
       setSubscribed(true);
     }

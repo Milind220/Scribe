@@ -28,8 +28,9 @@ type ProfileData = {
   free_posts_used: number;
   free_posts_limit: number;
   monthly_posts_used: number;
-  monthly_posts_limit: number;
+  monthly_post_limit: number;
   last_post_reset: string | null;   // ISO 8601
+  planActive: boolean;
 }
 
 
@@ -46,7 +47,7 @@ export default async function handler(
   const session = await getServerSession(req, res, authOptions);
   const userId = session?.user?.id;
   const accessToken = session?.user?.accessToken;
-  const plan = session?.user?.plan;
+  const planActive = session?.user?.planActive;
 
   // --- Check if User is Logged In ---
   if (!session || !userId) {
@@ -66,11 +67,12 @@ export default async function handler(
   let currentMonthlyUsed = 0;
   let needsMonthlyReset = false;
 
+  // --- 2. Get Profile Data and Check Limits ---
   const { data: profileData, error: profileError } = await supabaseAdmin
     .from('profiles')
-    .select('id, plan, free_posts_used, monthly_posts_used, monthly_post_limit, last_post_reset')  // Nice to be explicit about the fields we are fetching
+    .select('id, plan, free_posts_used, monthly_posts_used, monthly_post_limit, last_post_reset, planActive')
     .eq('id', userId)
-    .single();  // We know there will only be one profile per user
+    .single() as { data: ProfileData, error: any };
 
   if (profileError || !profileData) {
     console.error(`Error fetching profile data for ${userId}:`, profileError);
@@ -101,7 +103,7 @@ export default async function handler(
     incrementFree = true;  // Increment the free counter
     incrementMonthly = true;  // Increment the monthly counter
     console.log(`User ${userId} using monthly post (${currentMonthlyUsed + 1} of ${profileData.monthly_post_limit})`);
-  } else if (plan != 'free' && currentMonthlyUsed < profileData.monthly_post_limit) {
+  } else if (profileData.planActive && currentMonthlyUsed < profileData.monthly_post_limit) {
     canPost = true;
     incrementFree = false;
     incrementMonthly = true;
