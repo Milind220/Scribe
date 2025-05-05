@@ -76,6 +76,7 @@ Deno.serve(async (req: Request) => {
         plan: subscription.items.data[0].price.id,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        active: subscription.status === subscription.status,
       };
 
       console.log(">>> Subscription details:", subscriptionDetails);
@@ -89,6 +90,7 @@ Deno.serve(async (req: Request) => {
           stripe_subscription_plan: subscriptionDetails.plan,
           stripe_subscription_current_period_end: subscriptionDetails.currentPeriodEnd,
           stripe_subscription_cancel_at_period_end: subscriptionDetails.cancelAtPeriodEnd,
+          stripe_subscription_active: subscriptionDetails.active,
         })
         .eq("id", userId);
 
